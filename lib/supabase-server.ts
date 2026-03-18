@@ -15,7 +15,12 @@ export async function supabaseServer() {
         auth: { persistSession: false, autoRefreshToken: false },
         global: {
           fetch: (url, options) => {
-            return fetch(url, { ...options, next: { revalidate: 0 } });
+            // Add a 60-second timeout to the fetch call
+            return fetch(url, { 
+              ...options, 
+              next: { revalidate: 0 },
+              signal: AbortSignal.timeout(60000)
+            });
           }
         }
       }

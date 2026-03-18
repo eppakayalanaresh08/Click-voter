@@ -238,32 +238,43 @@ async function bootstrapWorkspaceForPhone(phone: string) {
 
   const supabase = await supabaseServer();
 
+  console.log(`[bootstrap] Starting for ${phone}...`);
   try {
+    console.time('[bootstrap] auth.admin.createUser');
     const { data: createdUser, error: createErr } = await supabase.auth.admin.createUser({
       phone,
       phone_confirm: true
     });
+    console.timeEnd('[bootstrap] auth.admin.createUser');
 
     if (createErr && !isDuplicateUserError(createErr.message)) {
       throw new Error(`Auth Error: ${createErr.message}`);
     }
 
+    console.time('[bootstrap] resolveAuthUserIdByPhone');
     const profileId = await resolveAuthUserIdByPhone(phone, createdUser?.user?.id ?? null);
+    console.timeEnd('[bootstrap] resolveAuthUserIdByPhone');
+
+    console.time('[bootstrap] getOrCreateBootstrapTenantId');
     const tenantId = await getOrCreateBootstrapTenantId();
+    console.timeEnd('[bootstrap] getOrCreateBootstrapTenantId');
 
     if (!profileId) {
       throw new Error('Failed to resolve initial admin auth user');
     }
 
+    console.time('[bootstrap] upsertProfileRecord');
     const profile = await upsertProfileRecord({
       id: profileId,
       tenantId,
       role: 'SUPER_ADMIN',
       phone
     });
+    console.timeEnd('[bootstrap] upsertProfileRecord');
 
     return backfillSubUserAssignments(profile);
   } catch (err: any) {
+    console.error(`[bootstrap] Error for ${phone}:`, err);
     if (err.message?.includes('fetch failed') || err.name === 'ConnectTimeoutError') {
       throw new Error('Connection to Supabase timed out. Please check your internet connection or Supabase project status.');
     }
