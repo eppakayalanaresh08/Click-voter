@@ -4,9 +4,6 @@ import { getAssignedVoterById } from '@/lib/assigned-voters';
 
 export const runtime = 'nodejs';
 
-export function generateStaticParams() {
-  return [];
-}
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const profile = await getProfile();

@@ -1,4 +1,7 @@
+export const dynamic = 'force-dynamic';
+
 import NextLink from 'next/link';
+
 import { redirect } from 'next/navigation';
 import { AppBar, Box, Button, Container, Stack, Toolbar, Typography } from '@mui/material';
 import { getProfile } from '@/lib/auth';

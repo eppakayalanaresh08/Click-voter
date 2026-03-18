@@ -238,30 +238,37 @@ async function bootstrapWorkspaceForPhone(phone: string) {
 
   const supabase = await supabaseServer();
 
-  const { data: createdUser, error: createErr } = await supabase.auth.admin.createUser({
-    phone,
-    phone_confirm: true
-  });
+  try {
+    const { data: createdUser, error: createErr } = await supabase.auth.admin.createUser({
+      phone,
+      phone_confirm: true
+    });
 
-  if (createErr && !isDuplicateUserError(createErr.message)) {
-    throw new Error(createErr.message);
+    if (createErr && !isDuplicateUserError(createErr.message)) {
+      throw new Error(`Auth Error: ${createErr.message}`);
+    }
+
+    const profileId = await resolveAuthUserIdByPhone(phone, createdUser?.user?.id ?? null);
+    const tenantId = await getOrCreateBootstrapTenantId();
+
+    if (!profileId) {
+      throw new Error('Failed to resolve initial admin auth user');
+    }
+
+    const profile = await upsertProfileRecord({
+      id: profileId,
+      tenantId,
+      role: 'SUPER_ADMIN',
+      phone
+    });
+
+    return backfillSubUserAssignments(profile);
+  } catch (err: any) {
+    if (err.message?.includes('fetch failed') || err.name === 'ConnectTimeoutError') {
+      throw new Error('Connection to Supabase timed out. Please check your internet connection or Supabase project status.');
+    }
+    throw err;
   }
-
-  const profileId = await resolveAuthUserIdByPhone(phone, createdUser.user?.id ?? null);
-  const tenantId = await getOrCreateBootstrapTenantId();
-
-  if (!profileId) {
-    throw new Error('Failed to resolve initial admin auth user');
-  }
-
-  const profile = await upsertProfileRecord({
-    id: profileId,
-    tenantId,
-    role: 'SUPER_ADMIN',
-    phone
-  });
-
-  return backfillSubUserAssignments(profile);
 }
 
 export async function getSessionPhone() {
