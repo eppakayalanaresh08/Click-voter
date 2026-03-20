@@ -431,29 +431,7 @@ export default function VoterProfileClient() {
             <Button
               variant="outlined"
               fullWidth
-              {/* onClick={async () => {
-                if (!voter) return;
-                try {
-                  setStatus("Connecting to printer...");
-                  await thermalPrinter.printVoter({
-                    voter_name: voter.voter_name,
-                    voter_name_tamil: voter.voter_name_tamil,
-                    booth_no: voter.booth_no,
-                    epic_id: voter.epic_id,
-                    house_no: voter.house_no,
-                    serial_no: voter.serial_no,
-                    booth_name: voter.booth_name,
-                    mobile_no: voter.mobile_no,
-                  });
-                  await logAction("THERMAL_PRINTED");
-                  setStatus("Sent to thermal printer. 🖨️");
-                } catch (error) {
-                  console.error(error);
-                  setStatus(
-                    "Bluetooth printing failed. Ensure printer is on and paired.",
-                  );
-                }
-              }} */}
+             
 
 onClick={() => {
   if (!window.PrinterBridge) {
