@@ -431,7 +431,7 @@ export default function VoterProfileClient() {
             <Button
               variant="outlined"
               fullWidth
-              onClick={async () => {
+              {/* onClick={async () => {
                 if (!voter) return;
                 try {
                   setStatus("Connecting to printer...");
@@ -453,7 +453,34 @@ export default function VoterProfileClient() {
                     "Bluetooth printing failed. Ensure printer is on and paired.",
                   );
                 }
-              }}
+              }} */}
+
+onClick={() => {
+  if (!window.PrinterBridge) {
+    setStatus("❌ Printer not available (APK only)");
+    return;
+  }
+
+  try {
+    const text = `
+${voter.voter_name}
+Booth: ${voter.booth_no} - ${voter.booth_name}
+EPIC: ${voter.epic_id}
+House: ${voter.house_no}
+Phone: ${voter.mobile_no}
+
+----------------------
+`;
+
+    const result = window.PrinterBridge.printText(text);
+
+    setStatus("🖨️ " + result);
+  } catch (e) {
+    setStatus("❌ Printing failed");
+  }
+}}
+
+                
             >
               Bluetooth Print
             </Button>
